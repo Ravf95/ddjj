@@ -65,7 +65,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 	var err error
 	switch mimeType {
 	case "application/pdf":
-		body, meta, err = ConvertPDF(r)
+		body, meta, err = ConvertPDF(r, readability)
 		
 	case "application/msword", "application/vnd.ms-word":
 	case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
