@@ -36,6 +36,9 @@ type ExtractorFlag int
 const (
 	// the tokens skip blank lines
 	EXTRACTOR_FLAG_1 = 1<<(iota + 1)
+
+	// trim leading and trailing spaces from tokens
+	EXTRACTOR_FLAG_2
 )
 
 func NewExtractor(raw string) *Extractor {
@@ -54,6 +57,11 @@ func (e *Extractor) Scan() bool {
 					continue
 				}
 			}
+
+			if e.Flags & EXTRACTOR_FLAG_2 != 0 {
+				return strings.TrimSpace(s.Text()), true
+			}
+
 			return s.Text(), true
 		}
 		return "", false

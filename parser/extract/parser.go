@@ -77,10 +77,18 @@ func ParsePDF(file io.Reader) ParserData {
 		Data:    nil,
 		Raw:     make([]string, 0),
 	}
-	res, err := docconv.Convert(file, "application/pdf", true)
+	res, err := docconv.Convert(file, "application/pdf", false)
 
 	if err != nil {
 		parser.addError(err)
+		parser.Status = 1
+		return parser
+	}
+
+	res2, err2 := docconv.Convert(file, "application/pdf", true)
+
+	if err2 != nil {
+		parser.addError(err2)
 		parser.Status = 1
 		return parser
 	}
@@ -99,7 +107,7 @@ func ParsePDF(file io.Reader) ParserData {
 	d.Conyuge = parser.checkStr(Spouse(NewExtractor(res.Body)))
 
 	// Jobs
-	d.Instituciones = Jobs(NewExtractor(res.Body), &parser)
+	d.Instituciones = Jobs(NewExtractor(res2.Body), &parser)
 
 	// Deposits
 	scanner := bufio.NewScanner(strings.NewReader(res.Body))
