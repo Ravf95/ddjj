@@ -80,3 +80,64 @@ func Lastname(e *Extractor) (string, error) {
 	}
 	return value, nil
 }
+
+func ReceptionDate(e *Extractor) (time.Time, error) {
+	var date string
+
+	e.BindFlag(EXTRACTOR_FLAG_1)
+	if e.MoveUntilContains(PrevToken, "RECEPCIONADO") &&
+	isBarCode(e.CurrToken) &&
+	isDate(e.NextToken) {
+		date = e.NextToken
+	}
+
+	if date == "" {
+		return time.Time{}, errors.New("failed when extracting reception date")
+	}
+
+	t, err := time.Parse("02/01/2006", date)
+	if err != nil {
+		return time.Time{}, errors.New("Error parsing " + date + err.Error())
+	}
+	return t, nil
+}
+
+func DownloadDate(e *Extractor) (time.Time, error) {
+	var date string
+
+	e.BindFlag(EXTRACTOR_FLAG_1)
+	if e.MoveUntilStartWith(NextToken, "página") &&
+	isCurrLine(e.CurrToken, "versión") &&
+	isTimestamp(e.PrevToken) {
+		date = e.PrevToken
+	}
+
+	if date == "" {
+		return time.Time{}, errors.New("failed when extracting download date")
+	}
+
+	// RFC3339 layout
+	t, err := time.Parse("02/01/2006 15:04:05", date)
+	if err != nil {
+		return time.Time{}, errors.New("Error parsing " + date + err.Error())
+	}
+	return t, nil
+}
+
+func Version(e *Extractor) (string, error) {
+	var version string
+
+	e.BindFlag(EXTRACTOR_FLAG_1)
+	if e.MoveUntilStartWith(CurrToken, "versión") {
+		val, check := isKeyValuePair(e.CurrToken, "versión")
+		if check {
+			version = val
+		}
+	}
+
+	if version == "" {
+		return "", errors.New("failed when extracting version")
+	}
+
+	return version, nil
+}

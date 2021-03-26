@@ -236,6 +236,11 @@ func isDate(line string) bool {
 	return matched
 }
 
+func isTimestamp(line string) bool {
+	matched, _ := regexp.MatchString(`[0-9]{2}/[0-9]{2}/[0-9]{4}\s*[0-9]{2}:[0-9]{2}:[0-9]{2}`, line)
+	return matched
+}
+
 func isAlpha(line string) bool {
 	matched, _ := regexp.MatchString(`[aA-zZ].*$`, line)
 	return matched
@@ -248,6 +253,11 @@ func isAlphaNum(line string) bool {
 
 func isNumber(line string) bool {
 	matched, _ := regexp.MatchString(`^[\+\-]*[0-9.,]*[0-9]$`, line)
+	return matched
+}
+
+func isBarCode(line string) bool {
+	matched, _ := regexp.MatchString(`[0-9]{5,6}-[0-9]{5,7}-[0-9]{1,3}`, line)
 	return matched
 }
 
@@ -388,9 +398,4 @@ func stringToYear(line string) int {
 	}
 
 	return year
-}
-
-func isBarCode(line string) bool {
-	matched, _ := regexp.MatchString(`[0-9]{5,6}-[0-9]{5,7}-[0-9]{1,3}`, line)
-	return matched
 }
