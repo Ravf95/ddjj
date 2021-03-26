@@ -85,7 +85,7 @@ func ReceptionDate(e *Extractor) (time.Time, error) {
 	var date string
 
 	e.BindFlag(EXTRACTOR_FLAG_1)
-	if e.MoveUntilContains(PrevToken, "RECEPCIONADO") &&
+	if e.MoveUntilStartWith(PrevToken, "RECEPCIONADO") &&
 	isBarCode(e.CurrToken) &&
 	isDate(e.NextToken) {
 		date = e.NextToken
