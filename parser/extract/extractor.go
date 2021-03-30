@@ -20,6 +20,7 @@ type Extractor struct {
 	SavedLine int
 	
 	Buffer []string
+	BufferHookFunc func(tokens []string) []string
 
 	Flags ExtractorFlag
 }
@@ -50,6 +51,9 @@ func NewExtractor(raw string) *Extractor {
 	return &Extractor{
 		RawData: raw,
 		Scanner: bufio.NewScanner(strings.NewReader(raw)),
+		BufferHookFunc: func(tokens []string) []string {
+			return tokens
+		},
 	}
 }
 
@@ -79,7 +83,7 @@ func (e *Extractor) Scan() bool {
 
 			if e.Flags & EXTRACTOR_FLAG_3 != 0 &&
 			text != "" {
-				e.Buffer = tokenize(text, 3)
+				e.Buffer = e.BufferHookFunc(tokenize(text, 3))
 				text = e.Buffer[0]
 			}
 
@@ -171,7 +175,7 @@ func (e *Extractor) UnbindFlag(flag ExtractorFlag) {
 	e.Flags &= flag
 }
 
-func (e *Extractor) UnbindAllFlags(flag ExtractorFlag) {
+func (e *Extractor) UnbindAllFlags() {
 	e.Flags = 0
 }
 
@@ -334,6 +338,24 @@ func tokenize(line string, max int) []string {
 	}
 	tokens = append(tokens, strings.TrimSpace(buffer.String()))
 	return tokens
+}
+
+// join two or more array string if one of them contains the sep string
+func combine(tokens []string, sep string) []string {
+	var result []string
+	length := len(tokens)
+
+	for i := 0; i < length; i++ {
+		if i + 1 < length &&
+		strings.Contains(tokens[i], sep) &&
+		!strings.Contains(tokens[i+1], sep) {
+			result = append(result, tokens[i] + tokens[i+1])
+			i += 1
+			continue
+		}
+		result = append(result, tokens[i])
+	}
+	return result
 }
 
 /*
