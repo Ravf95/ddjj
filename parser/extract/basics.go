@@ -12,7 +12,8 @@ func Date(e *Extractor) (time.Time, error) {
 	e.BindFlag(EXTRACTOR_FLAG_1)
 	if e.MoveUntilContains(CurrToken, "DECLARACIÓN") {
 		for e.Scan() {
-			if isDate(e.CurrToken) {
+			if isDate(e.CurrToken) &&
+			len(e.CurrToken) <= 10 { // not substring (%dd/%mm/%yyyy)
 				date = e.CurrToken
 				break
 			}
@@ -85,10 +86,18 @@ func ReceptionDate(e *Extractor) (time.Time, error) {
 	var date string
 
 	e.BindFlag(EXTRACTOR_FLAG_1)
-	if e.MoveUntilStartWith(PrevToken, "RECEPCIONADO") &&
-	isBarCode(e.CurrToken) &&
-	isDate(e.NextToken) {
-		date = e.NextToken
+	if e.MoveUntilStartWith(PrevToken, "RECEPCIONADO") {
+		val, check := isKeyValuePair(e.PrevToken, "RECEPCIONADO")
+		if check &&
+		isDate(val) {
+			date = getDate(val)
+		}
+
+		if date == "" &&
+		isDate(e.NextToken) &&
+		isBarCode(removeSpaces(e.CurrToken)) {
+			date = getDate(e.NextToken)
+		}
 	}
 
 	if date == "" {
@@ -107,9 +116,14 @@ func DownloadDate(e *Extractor) (time.Time, error) {
 
 	e.BindFlag(EXTRACTOR_FLAG_1)
 	if e.MoveUntilStartWith(NextToken, "página") &&
-	isCurrLine(e.CurrToken, "versión") &&
-	isTimestamp(e.PrevToken) {
-		date = e.PrevToken
+	isCurrLine(e.CurrToken, "versión") {
+		val := getDate(e.PrevToken)
+		val += " "
+		val += getTime(e.PrevToken)
+
+		if isTimestamp(val) {
+			date = val
+		}
 	}
 
 	if date == "" {

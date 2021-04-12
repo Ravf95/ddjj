@@ -312,6 +312,10 @@ func removeAccents(s string) string {
 	return r.Replace(s)
 }
 
+func removeSpaces(s string) string {
+	return strings.ReplaceAll(s, " ", "")
+}
+
 // split a line into words that not exceed the max continuous spaces
 func tokenize(line string, max int) []string {
 	var tokens []string
@@ -356,6 +360,36 @@ func combine(tokens []string, sep string) []string {
 		result = append(result, tokens[i])
 	}
 	return result
+}
+
+func getTime(data string) string {
+	re := regexp.MustCompile(`[0-9]{2}`)
+	values := re.FindAllString(data, -1)
+	length := len(values)
+
+	if length < 3 {
+		return ""
+	}
+
+	return fmt.Sprintf("%s:%s:%s", values[length -3], values[length -2], values[length -1])
+}
+
+func getDate(data string) string {
+	re := regexp.MustCompile(`[0-9]{2}.[0-9]{2}.[0-9]{4}`)
+	result := re.FindString(data)
+
+	if result == "" {
+		return ""
+	}
+
+	re = regexp.MustCompile(`[0-9]{2,4}`)
+	values := re.FindAllString(result, -1)
+
+	if len(values) < 3 {
+		return ""
+	}
+
+	return fmt.Sprintf("%s/%s/%s", values[0], values[1], values[2])
 }
 
 /*
